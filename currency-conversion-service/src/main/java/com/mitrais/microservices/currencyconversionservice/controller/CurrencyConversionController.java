@@ -4,6 +4,8 @@ import com.mitrais.microservices.currencyconversionservice.bean.CurrencyConversi
 import com.mitrais.microservices.currencyconversionservice.exception.NotFoundException;
 import com.mitrais.microservices.currencyconversionservice.proxy.CurrencyExchangeServiceProxy;
 import feign.FeignException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +24,8 @@ public class CurrencyConversionController {
 
     @Autowired
     private CurrencyExchangeServiceProxy proxy;
+
+    private Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
     @GetMapping("currency-converter/from/{from}/to/{to}/quantity/{quantity}")
     public CurrencyConversionBean convertCurrency(@PathVariable String from,
@@ -58,6 +62,8 @@ public class CurrencyConversionController {
             CurrencyConversionBean bean = proxy.findExchangeValue(from, to);
             bean.setQuantity(quantity);
             bean.setTotalCalculatedAmount(quantity.multiply(bean.getConversionMultiple()));
+
+            logger.info("{}", bean);
             return bean;
         } catch (FeignException e) {
             throw new NotFoundException("Cannot found conversion rate between " + from + " and " + to);
