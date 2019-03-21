@@ -3,6 +3,7 @@ package com.mitrais.microservices.currencyconversionservice.controller;
 import com.mitrais.microservices.currencyconversionservice.bean.CurrencyConversionBean;
 import com.mitrais.microservices.currencyconversionservice.exception.NotFoundException;
 import com.mitrais.microservices.currencyconversionservice.proxy.CurrencyExchangeServiceProxy;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import feign.FeignException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,8 +17,11 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 @RestController
 public class CurrencyConversionController {
@@ -54,6 +58,9 @@ public class CurrencyConversionController {
     }
 
     @GetMapping("currency-converter-feign/from/{from}/to/{to}/quantity/{quantity}")
+    @HystrixCommand(fallbackMethod = "fallbackGetConversionRate", commandProperties = {
+            @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "1000")
+    })
     public CurrencyConversionBean convertCurrencyFeign(@PathVariable String from,
                                                        @PathVariable String to,
                                                        @PathVariable BigDecimal quantity) {
@@ -68,5 +75,13 @@ public class CurrencyConversionController {
         } catch (FeignException e) {
             throw new NotFoundException("Cannot found conversion rate between " + from + " and " + to);
         }
+    }
+
+    public CurrencyConversionBean fallbackGetConversionRate(String from,
+                                                       String to,
+                                                       BigDecimal quantity){
+        return new CurrencyConversionBean(0L, from, to, BigDecimal.ZERO, quantity,
+                BigDecimal.ZERO, 0);
+
     }
 }
