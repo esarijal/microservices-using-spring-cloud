@@ -3,12 +3,12 @@ package com.mitrais.microservices.currencyconversionservice.controller;
 import com.mitrais.microservices.currencyconversionservice.bean.CurrencyConversionBean;
 import com.mitrais.microservices.currencyconversionservice.exception.NotFoundException;
 import com.mitrais.microservices.currencyconversionservice.proxy.CurrencyExchangeServiceProxy;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import feign.FeignException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,11 +17,8 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 @RestController
 public class CurrencyConversionController {
